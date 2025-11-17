@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Facturador CFDI 4.0 - SAE</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>Facturador CFDI 4.0</h1>
+    <span class="subtitle">Clientes · Productos · Compras · Facturación</span>
+  </header>
+
+  <nav class="top-nav">
+    <button data-section="clientes" class="nav-btn active">Clientes</button>
+    <button data-section="productos" class="nav-btn">Productos</button>
+    <button data-section="compras" class="nav-btn">Compras</button>
+    <button data-section="facturacion" class="nav-btn">Facturación</button>
+  </nav>
+
+  <main>
+    <!-- =================== CLIENTES =================== -->
+    <section id="sec-clientes" class="section visible">
+      <h2>Clientes</h2>
+      <div class="grid-2">
+        <form id="form-cliente" class="card">
+          <h3>Nuevo / editar cliente</h3>
+
+          <label>
+            Nombre / Razón social
+            <input type="text" id="cli-nombre" required />
+          </label>
+
+          <label>
+            RFC
+            <input type="text" id="cli-rfc" maxlength="13" required />
+          </label>
+
+          <label>
+            Régimen fiscal (SAT)
+            <select id="cli-regimen" required>
+              <option value="">Cargando catálogos SAT...</option>
+            </select>
+          </label>
+
+          <label>
+            Uso de CFDI (SAT)
+            <select id="cli-uso-cfdi" required>
+              <option value="">Cargando catálogos SAT...</option>
+            </select>
+          </label>
+
+          <label>
+            Código postal
+            <input type="text" id="cli-cp" maxlength="5" required />
+          </label>
+
+          <label>
+            Dirección completa
+            <textarea id="cli-direccion" rows="3"></textarea>
+          </label>
+
+          <label>
+            Email
+            <input type="email" id="cli-email" />
+          </label>
+
+          <label>
+            Teléfono
+            <input type="tel" id="cli-telefono" />
+          </label>
+
+          <div class="form-actions">
+            <button type="submit">Guardar cliente</button>
+            <button type="button" id="btn-cli-limpiar">Limpiar</button>
+          </div>
+        </form>
+
+        <div class="card">
+          <h3>Listado de clientes</h3>
+          <table class="table" id="tabla-clientes">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>RFC</th>
+                <th>Régimen</th>
+                <th>Uso CFDI</th>
+                <th>CP</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- lleno desde JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================== PRODUCTOS =================== -->
+    <section id="sec-productos" class="section">
+      <h2>Productos / Servicios</h2>
+      <div class="grid-2">
+        <form id="form-producto" class="card">
+          <h3>Nuevo / editar producto</h3>
+
+          <label>
+            Descripción
+            <input type="text" id="prd-descripcion" required />
+          </label>
+
+          <label>
+            ClaveProdServ (SAT)
+            <input list="lista-clave-prodserv"
+                   id="prd-clave-prodserv"
+                   placeholder="Ej. 85121800 - Servicios médicos" />
+            <datalist id="lista-clave-prodserv"></datalist>
+          </label>
+
+          <label>
+            ClaveUnidad (SAT)
+            <input list="lista-clave-unidad"
+                   id="prd-clave-unidad"
+                   placeholder="Ej. E48 - Unidad de servicio" />
+            <datalist id="lista-clave-unidad"></datalist>
+          </label>
+
+          <label>
+            Unidad (texto en factura)
+            <input type="text" id="prd-unidad" placeholder="pz, servicio, etc." />
+          </label>
+
+          <label>
+            Precio unitario (sin IVA)
+            <input type="number" step="0.000001" min="0" id="prd-precio" required />
+          </label>
+
+          <label class="inline">
+            <input type="checkbox" id="prd-grava-iva" checked />
+            Aplica IVA 16%
+          </label>
+
+          <div class="form-actions">
+            <button type="submit">Guardar producto</button>
+            <button type="button" id="btn-prd-limpiar">Limpiar</button>
+          </div>
+        </form>
+
+        <div class="card">
+          <h3>Catálogo de productos</h3>
+          <table class="table" id="tabla-productos">
+            <thead>
+              <tr>
+                <th>Descripción</th>
+                <th>ClaveProdServ</th>
+                <th>ClaveUnidad</th>
+                <th>Unidad</th>
+                <th>Precio</th>
+                <th>IVA</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- lleno desde JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================== COMPRAS =================== -->
+    <section id="sec-compras" class="section">
+      <h2>Compras (registro interno)</h2>
+      <div class="card">
+        <p>
+          Aquí puedes registrar compras internas para control (no timbra CFDI).
+          Lo dejo básico para que lo puedas crecer.
+        </p>
+        <table class="table" id="tabla-compras">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Proveedor / Cliente</th>
+              <th>Concepto</th>
+              <th>Importe</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- puedes implementarlo después -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- =================== FACTURACIÓN =================== -->
+    <section id="sec-facturacion" class="section">
+      <h2>Facturación CFDI 4.0</h2>
+
+      <div class="card">
+        <h3>Datos generales</h3>
+        <div class="grid-3">
+          <label>
+            Cliente
+            <select id="fac-cliente"></select>
+          </label>
+
+          <label>
+            Serie
+            <input type="text" id="fac-serie" value="FN" />
+          </label>
+
+          <label>
+            Folio
+            <input type="number" id="fac-folio" min="1" />
+          </label>
+
+          <label>
+            Forma de pago
+            <select id="fac-forma-pago"></select>
+          </label>
+
+          <label>
+            Método de pago
+            <select id="fac-metodo-pago"></select>
+          </label>
+
+          <label>
+            Moneda
+            <input type="text" id="fac-moneda" value="MXN" />
+          </label>
+
+          <label>
+            Lugar de expedición (CP)
+            <input type="text" id="fac-lugar-exp" value="03020" />
+          </label>
+
+          <label>
+            Tipo de comprobante
+            <input type="text" id="fac-tipo-comp" value="I" readonly />
+          </label>
+
+          <label>
+            Fecha / hora (se toma la del sistema)
+            <input type="text" id="fac-fecha" readonly />
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Conceptos</h3>
+        <table class="table conceptos">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Descripción</th>
+              <th>Cant.</th>
+              <th>ClaveProdServ</th>
+              <th>ClaveUnidad</th>
+              <th>Unidad</th>
+              <th>V. unitario</th>
+              <th>Importe</th>
+              <th>IVA</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="fac-conceptos-body">
+            <!-- filas dinámicas -->
+          </tbody>
+        </table>
+        <button type="button" id="btn-agregar-concepto">Agregar concepto</button>
+      </div>
+
+      <div class="card totales">
+        <div class="totales-valores">
+          <div>
+            <span>Subtotal:</span>
+            <strong id="fac-subtotal">0.00</strong>
+          </div>
+          <div>
+            <span>IVA 16%:</span>
+            <strong id="fac-iva">0.00</strong>
+          </div>
+          <div>
+            <span>Total:</span>
+            <strong id="fac-total">0.00</strong>
+          </div>
+        </div>
+        <div class="totales-actions">
+          <button type="button" id="btn-generar-xml">Generar XML CFDI</button>
+          <button type="button" id="btn-ver-impresion">Vista impresión / PDF</button>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>XML generado</h3>
+          <textarea id="xml-output" rows="18" readonly></textarea>
+          <p class="help">
+            Este XML es una maqueta CFDI 4.0 (sin timbre).  
+            Debes enviarlo a tu PAC / sistema de timbrado.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Vista previa de impresión</h3>
+          <div id="preview-impresion" class="preview-impresion">
+            <!-- aquí se inyecta el HTML tipo PDF -->
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Área exclusiva para impresión -->
+  <div id="print-area" class="print-area"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
