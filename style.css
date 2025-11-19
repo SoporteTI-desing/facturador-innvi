@@ -346,3 +346,103 @@ button#btn-agregar-concepto {
     font-size: 12px;
   }
 }
+
+
+.empresa-switch {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.empresa-switch .empresa-btn {
+  border: none;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #374151;
+  color: #e5e7eb;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.empresa-switch .empresa-btn.active {
+  background: #fbbf24;
+  color: #111827;
+}
+
+/* COMPRAS estilo SAE */
+.compras-sa {
+  background: #e5ecf5;
+  border: 1px solid #cbd5e1;
+}
+
+.compras-sa-header {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+.compras-sa-header label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.compras-sa-header input,
+.compras-sa-header select {
+  width: 100%;
+  padding: 2px 4px;
+  font-size: 12px;
+}
+
+.compras-detalle-table th,
+.compras-detalle-table td {
+  font-size: 12px;
+  padding: 4px 6px;
+}
+
+.compras-detalle-table input {
+  width: 100%;
+  padding: 2px 4px;
+  font-size: 12px;
+}
+
+.compras-footer {
+  display: grid;
+  grid-template-columns: 2.5fr 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 12px;
+}
+
+.compras-footer label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.compras-footer input {
+  width: 100%;
+  padding: 2px 4px;
+  font-size: 12px;
+}
+
+.compras-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btn-secundario {
+  margin-top: 8px;
+  font-size: 12px;
+  padding: 4px 10px;
+}
+
+.compras-total-sub {
+  text-align: right;
+}

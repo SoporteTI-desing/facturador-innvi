@@ -7,8 +7,15 @@
 </head>
 <body>
   <header class="app-header">
-    <h1>Facturador CFDI 4.0</h1>
-    <span class="subtitle">Clientes · Productos · Compras · Facturación</span>
+    <div>
+      <h1>Facturador CFDI 4.0</h1>
+      <span class="subtitle">Clientes · Productos · Compras · Facturación</span>
+    </div>
+    <div class="empresa-switch">
+      <span>Empresa:</span>
+      <button type="button" class="empresa-btn active" data-empresa="sanare">Sanaré</button>
+      <button type="button" class="empresa-btn" data-empresa="nomad">Nomad</button>
+    </div>
   </header>
 
   <nav class="top-nav">
@@ -168,31 +175,171 @@
       </div>
     </section>
 
+    
     <!-- =================== COMPRAS =================== -->
     <section id="sec-compras" class="section">
-      <h2>Compras (registro interno)</h2>
+      <h2>Compras</h2>
+      <div class="card compras-sa">
+        <div class="compras-sa-header">
+          <label>
+            Compra
+            <select id="comp-tipo">
+              <option value="Directa">Directa</option>
+              <option value="Orden de compra">Orden de compra</option>
+              <option value="Consignación">Consignación</option>
+            </select>
+          </label>
+          <label>
+            Número
+            <input type="text" id="comp-numero" readonly />
+          </label>
+          <label>
+            Fecha
+            <input type="date" id="comp-fecha" />
+          </label>
+          <label>
+            Proveedor
+            <input type="text" id="comp-proveedor" />
+          </label>
+
+          <label>
+            RFC
+            <input type="text" id="comp-rfc" />
+          </label>
+          <label>
+            Nombre
+            <input type="text" id="comp-nombre" />
+          </label>
+          <label>
+            Ref. Prov.
+            <input type="text" id="comp-ref-prov" />
+          </label>
+          <label>
+            Esquema
+            <input type="text" id="comp-esquema" />
+          </label>
+
+          <label>
+            Calle
+            <input type="text" id="comp-calle" />
+          </label>
+          <label>
+            Núm. ext.
+            <input type="text" id="comp-num-ext" />
+          </label>
+          <label>
+            Núm. int.
+            <input type="text" id="comp-num-int" />
+          </label>
+          <label>
+            Colonia
+            <input type="text" id="comp-colonia" />
+          </label>
+
+          <label>
+            Código postal
+            <input type="text" id="comp-cp" />
+          </label>
+          <label>
+            Población
+            <input type="text" id="comp-poblacion" />
+          </label>
+          <label>
+            País
+            <input type="text" id="comp-pais" />
+          </label>
+          <label>
+            Entregar a
+            <input type="text" id="comp-entregar-a" />
+          </label>
+
+          <label>
+            Fecha rec.
+            <input type="date" id="comp-fecha-rec" />
+          </label>
+          <label>
+            Descuento
+            <input type="number" id="comp-descuento" step="0.01" />
+          </label>
+          <label>
+            Desc. fin.
+            <input type="number" id="comp-desc-fin" step="0.01" />
+          </label>
+          <label>
+            Gastos ind.
+            <input type="number" id="comp-gastos-ind" step="0.01" />
+          </label>
+
+          <label>
+            Almacén
+            <input type="text" id="comp-almacen" />
+          </label>
+        </div>
+
+        <div class="compras-detalle">
+          <table class="table compras-detalle-table">
+            <thead>
+              <tr>
+                <th>Cant.</th>
+                <th>Producto</th>
+                <th>Unidad</th>
+                <th>Descuento</th>
+                <th>I.E.P.S.</th>
+                <th>Coaseguro</th>
+                <th>Deducible</th>
+                <th>I.V.A.</th>
+                <th>Costo por unidad</th>
+                <th>Subtotal por partida</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="compras-detalle-body">
+            </tbody>
+          </table>
+          <button type="button" id="btn-agregar-partida" class="btn-secundario">
+            Agregar partida
+          </button>
+        </div>
+
+        <div class="compras-footer">
+          <label class="descripcion-field">
+            Descripción
+            <input type="text" id="comp-descripcion" />
+          </label>
+          <label>
+            Fact./unidades
+            <input type="text" id="comp-fact-unidades" />
+          </label>
+          <label>
+            Total por partida
+            <input type="text" id="comp-total-partida" readonly />
+          </label>
+        </div>
+
+        <div class="compras-actions">
+          <button type="button" id="btn-nueva-compra">Nueva compra</button>
+          <button type="button" id="btn-guardar-compra">Guardar compra</button>
+        </div>
+      </div>
+
       <div class="card">
-        <p>
-          Aquí puedes registrar compras internas para control (no timbra CFDI).
-          Lo dejo básico para que lo puedas crecer.
-        </p>
+        <h3>Historial de compras</h3>
         <table class="table" id="tabla-compras">
           <thead>
             <tr>
               <th>Fecha</th>
-              <th>Proveedor / Cliente</th>
+              <th>Proveedor</th>
               <th>Concepto</th>
-              <th>Importe</th>
+              <th>Importe total</th>
             </tr>
           </thead>
           <tbody>
-            <!-- puedes implementarlo después -->
           </tbody>
         </table>
       </div>
     </section>
 
-    <!-- =================== FACTURACIÓN =================== -->
+<!-- =================== FACTURACIÓN =================== -->
     <section id="sec-facturacion" class="section">
       <h2>Facturación CFDI 4.0</h2>
 
