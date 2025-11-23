@@ -406,6 +406,8 @@
               <th>Unidad</th>
               <th>V. unitario</th>
               <th>Importe</th>
+              <th>Coaseguro</th>
+              <th>Deducible</th>
               <th>IVA</th>
               <th></th>
             </tr>
@@ -430,6 +432,18 @@
           <div>
             <span>Total:</span>
             <strong id="fac-total">0.00</strong>
+          </div>
+          <div>
+            <span>Total coaseguro:</span>
+            <strong id="fac-coaseguro-total">0.00</strong>
+          </div>
+          <div>
+            <span>Total deducible:</span>
+            <strong id="fac-deducible-total">0.00</strong>
+          </div>
+          <div>
+            <span>Total paciente:</span>
+            <strong id="fac-total-ajustado">0.00</strong>
           </div>
         </div>
         <div class="totales-actions">
@@ -460,6 +474,22 @@
 
   <!-- Área exclusiva para impresión -->
   <div id="print-area" class="print-area"></div>
+
+<!-- Listas sugeridas para Coaseguro y Deducible -->
+<datalist id="lista-coaseguro">
+  <option value="0"></option>
+  <option value="10"></option>
+  <option value="20"></option>
+  <option value="30"></option>
+  <option value="50"></option>
+</datalist>
+
+<datalist id="lista-deducible">
+  <option value="0"></option>
+  <option value="1000"></option>
+  <option value="2000"></option>
+  <option value="5000"></option>
+</datalist>
 
   <script src="app.js"></script>
 </body>

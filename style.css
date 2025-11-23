@@ -240,6 +240,7 @@ button#btn-agregar-concepto {
     visibility: visible;
   }
   #print-area {
+    display: block;
     position: absolute;
     left: 0;
     top: 0;
@@ -445,4 +446,20 @@ button#btn-agregar-concepto {
 
 .compras-total-sub {
   text-align: right;
+}
+
+
+/* === Ajuste impresión: solo imprimir #print-area en una sola hoja === */
+@media print {
+  body {
+    margin: 0;
+  }
+  body > * {
+    display: none !important;
+  }
+  #print-area {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+  }
 }
