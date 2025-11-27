@@ -250,19 +250,40 @@ button#btn-agregar-concepto {
 
 /* Estilo tipo PDF para la factura impresa */
 .factura-pdf {
-  font-size: 11px;
-  padding: 12px;
+  font-size: 12px;
+  padding: 16px;
   font-family: "Arial", sans-serif;
 }
 
 .factura-pdf-header {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
 }
 
 .factura-pdf-header .emisor,
 .factura-pdf-header .receptor {
-  width: 48%;
+  box-sizing: border-box;
+}
+
+.factura-pdf-header .emisor {
+  flex: 0 0 auto;
+}
+
+.factura-pdf-header-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.factura-pdf-header-bottom .factura-pdf-comprobante {
+  flex: 0 0 60%;
+}
+
+.factura-pdf-header-bottom .receptor {
+  flex: 0 0 38%;
 }
 
 .factura-pdf-header h2 {
@@ -462,4 +483,8 @@ button#btn-agregar-concepto {
     position: static !important;
     width: 100% !important;
   }
+}
+
+.factura-pdf-header .emisor img {
+  display: block;
 }
