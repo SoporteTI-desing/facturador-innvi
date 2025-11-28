@@ -5008,8 +5008,6 @@ function recalcularTotales() {
 
   const totalCfdi = subtotal + ivaTotal;
   const totalPaciente = totalCfdi - coaseguroTotal - deducibleTotal;
-  const notasInput = document.getElementById("fac-notas");
-  const notas = notasInput ? notasInput.value.trim() : "";
 
   document.getElementById("fac-subtotal").textContent = formatoMonedaBonito(subtotal);
   document.getElementById("fac-iva").textContent = formatoMonedaBonito(ivaTotal);
@@ -5219,11 +5217,6 @@ function actualizarVistaImpresion(cliente, datosFactura) {
       </table>
     </div>
 
-    <div class="factura-pdf-notas">
-      <strong>Notas:</strong>
-      <div class="factura-pdf-notas-cuerpo">${escapeXml(datosFactura.notas || "")}</div>
-    </div>
-
     <div class="factura-pdf-totales">
       Subtotal: ${formatoMonedaBonito(datosFactura.subtotal)}<br/>
       IVA 16%: ${formatoMonedaBonito(datosFactura.ivaTotal)}<br/>
@@ -5265,8 +5258,6 @@ function verImpresion() {
   });
   const totalCfdi = subtotal + ivaTotal;
   const totalPaciente = totalCfdi - coaseguroTotal - deducibleTotal;
-  const notasInput = document.getElementById("fac-notas");
-  const notas = notasInput ? notasInput.value.trim() : "";
   const datosFactura = {
     serie: document.getElementById("fac-serie").value.trim(),
     folio: document.getElementById("fac-folio").value.trim(),
@@ -5278,8 +5269,7 @@ function verImpresion() {
     total: totalCfdi,
     coaseguroTotal,
     deducibleTotal,
-    totalPaciente,
-    notas
+    totalPaciente
   };
   actualizarVistaImpresion(cliente, datosFactura);
   guardarFolioUsado(datosFactura.folio);
