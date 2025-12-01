@@ -4870,6 +4870,7 @@ function agregarConcepto() {
     <td><input type="text" class="fac-importe" readonly /></td>
     <td><input type="number" min="0" step="0.000001" class="fac-coaseguro" list="lista-coaseguro" /></td>
     <td><input type="number" min="0" step="0.000001" class="fac-deducible" list="lista-deducible" /></td>
+    <td><input type="number" min="0" step="0.01" class="fac-descuento" /></td>
     <td><input type="text" class="fac-iva" readonly /></td>
     <td class="actions"><button type="button" class="fac-row-del">X</button></td>
   `;
@@ -4898,6 +4899,7 @@ if (satCatalogs && Array.isArray(satCatalogs.claveUnidad)) {
   const inpImporte = tr.querySelector(".fac-importe");
   const inpCoaseguro = tr.querySelector(".fac-coaseguro");
   const inpDeducible = tr.querySelector(".fac-deducible");
+  const inpDescuento = tr.querySelector(".fac-descuento");
   const inpIva = tr.querySelector(".fac-iva");
   const btnDel = tr.querySelector(".fac-row-del");
 
@@ -4928,7 +4930,8 @@ if (satCatalogs && Array.isArray(satCatalogs.claveUnidad)) {
     calcularImportes();
   });
 
-  [inpCant, inpPrecio].forEach((inp) => {
+  [inpCant, inpPrecio, inpDescuento].forEach((inp) => {
+    if (!inp) return;
     inp.addEventListener("input", () => calcularImportes());
   });
 
@@ -4945,10 +4948,13 @@ if (satCatalogs && Array.isArray(satCatalogs.claveUnidad)) {
     const cant = parseFloat(inpCant.value || "0");
     const precio = parseFloat(inpPrecio.value || "0");
     const base = cant * precio;
+    const descPorc = parseFloat((inpDescuento && inpDescuento.value) || "0");
+    const montoDesc = base * (descPorc / 100);
+    const neto = base - montoDesc;
     const p = productos.find((x) => x.id === selProd.value);
     const gravaIva = p ? p.gravaIva : true;
-    const iva = gravaIva ? base * 0.16 : 0;
-    inpImporte.value = formatoMoneda(base);
+    const iva = gravaIva ? neto * 0.16 : 0;
+    inpImporte.value = formatoMoneda(neto);
     inpIva.value = formatoMoneda(iva);
     recalcularTotales();
   }
@@ -4970,6 +4976,9 @@ function leerConceptosFactura() {
     const precio = parseFloat(tr.querySelector(".fac-precio").value || "0");
     if (!cant || !precio) return;
     const base = cant * precio;
+    const descuentoPorcentaje = parseFloat(tr.querySelector(".fac-descuento")?.value || "0");
+    const descuentoMonto = base * (descuentoPorcentaje / 100);
+    const importeNeto = base - descuentoMonto;
     const iva = parseFloat(tr.querySelector(".fac-iva").value || "0");
     const coaseguro = parseFloat(tr.querySelector(".fac-coaseguro")?.value || "0");
     const deducible = parseFloat(tr.querySelector(".fac-deducible")?.value || "0");
@@ -4982,7 +4991,10 @@ function leerConceptosFactura() {
       claveUnidad: extraerClaveSat(tr.querySelector(".fac-clave-unidad").value),
       unidad: tr.querySelector(".fac-unidad").value.trim(),
       valorUnitario: precio,
-      importe: base,
+      importeBase: base,
+      descuentoPorcentaje,
+      descuentoMonto,
+      importe: importeNeto,
       iva,
       coaseguro,
       deducible
@@ -4994,26 +5006,36 @@ function leerConceptosFactura() {
 
 function recalcularTotales() {
   conceptosFactura = leerConceptosFactura();
-  let subtotal = 0;
+  let subtotalBase = 0;
+  let descuentoTotal = 0;
   let ivaTotal = 0;
   let coaseguroTotal = 0;
   let deducibleTotal = 0;
 
   conceptosFactura.forEach((c) => {
-    subtotal += c.importe;
-    ivaTotal += c.iva;
+    const base = c.importeBase != null ? c.importeBase : c.importe || 0;
+    const desc = c.descuentoMonto || 0;
+    subtotalBase += base;
+    descuentoTotal += desc;
+    ivaTotal += c.iva || 0;
     coaseguroTotal += c.coaseguro || 0;
     deducibleTotal += c.deducible || 0;
   });
 
-  const totalCfdi = subtotal + ivaTotal;
+  const subtotalNeto = subtotalBase - descuentoTotal;
+  const totalCfdi = subtotalNeto + ivaTotal;
   const totalPaciente = totalCfdi - coaseguroTotal - deducibleTotal;
   const notasInput = document.getElementById("fac-notas");
   const notas = notasInput ? notasInput.value.trim() : "";
 
-  document.getElementById("fac-subtotal").textContent = formatoMonedaBonito(subtotal);
-  document.getElementById("fac-iva").textContent = formatoMonedaBonito(ivaTotal);
-  document.getElementById("fac-total").textContent = formatoMonedaBonito(totalCfdi);
+  const elSub = document.getElementById("fac-subtotal");
+  const elDesc = document.getElementById("fac-descuento");
+  const elIva = document.getElementById("fac-iva");
+  const elTot = document.getElementById("fac-total");
+  if (elSub) elSub.textContent = formatoMonedaBonito(subtotalBase);
+  if (elDesc) elDesc.textContent = formatoMonedaBonito(descuentoTotal);
+  if (elIva) elIva.textContent = formatoMonedaBonito(ivaTotal);
+  if (elTot) elTot.textContent = formatoMonedaBonito(totalCfdi);
 
   const elCoa = document.getElementById("fac-coaseguro-total");
   const elDed = document.getElementById("fac-deducible-total");
@@ -5022,6 +5044,7 @@ function recalcularTotales() {
   if (elDed) elDed.textContent = formatoMonedaBonito(deducibleTotal);
   if (elTotAdj) elTotAdj.textContent = formatoMonedaBonito(totalPaciente);
 }
+
 
 // ========================= GENERAR XML CFDI =========================
 function generarXml() {
@@ -5225,7 +5248,8 @@ function actualizarVistaImpresion(cliente, datosFactura) {
     </div>
 
     <div class="factura-pdf-totales">
-      Subtotal: ${formatoMonedaBonito(datosFactura.subtotal)}<br/>
+      Subtotal: ${formatoMonedaBonito(datosFactura.subtotalBase ?? datosFactura.subtotal)}<br/>
+      Descuento: ${formatoMonedaBonito(datosFactura.descuentoTotal || 0)}<br/>
       IVA 16%: ${formatoMonedaBonito(datosFactura.ivaTotal)}<br/>
       Total coaseguro: ${formatoMonedaBonito(datosFactura.coaseguroTotal || 0)}<br/>
       Total deducible: ${formatoMonedaBonito(datosFactura.deducibleTotal || 0)}<br/>
@@ -5253,17 +5277,22 @@ function verImpresion() {
     return;
   }
   conceptosFactura = leerConceptosFactura();
-  let subtotal = 0;
+  let subtotalBase = 0;
+  let descuentoTotal = 0;
   let ivaTotal = 0;
   let coaseguroTotal = 0;
   let deducibleTotal = 0;
   conceptosFactura.forEach((c) => {
-    subtotal += c.importe;
-    ivaTotal += c.iva;
+    const base = c.importeBase != null ? c.importeBase : c.importe || 0;
+    const desc = c.descuentoMonto || 0;
+    subtotalBase += base;
+    descuentoTotal += desc;
+    ivaTotal += c.iva || 0;
     coaseguroTotal += c.coaseguro || 0;
     deducibleTotal += c.deducible || 0;
   });
-  const totalCfdi = subtotal + ivaTotal;
+  const subtotalNeto = subtotalBase - descuentoTotal;
+  const totalCfdi = subtotalNeto + ivaTotal;
   const totalPaciente = totalCfdi - coaseguroTotal - deducibleTotal;
   const notasInput = document.getElementById("fac-notas");
   const notas = notasInput ? notasInput.value.trim() : "";
@@ -5273,7 +5302,9 @@ function verImpresion() {
     fecha: document.getElementById("fac-fecha").value.trim() || hoyIso(),
     formaPago: document.getElementById("fac-forma-pago").value,
     metodoPago: document.getElementById("fac-metodo-pago").value,
-    subtotal,
+    subtotal: subtotalNeto,
+    subtotalBase,
+    descuentoTotal,
     ivaTotal,
     total: totalCfdi,
     coaseguroTotal,
