@@ -19,6 +19,8 @@ let clientes = [];
 let productos = [];
 let compras = [];
 let conceptosFactura = [];
+let pagos = [];
+let notasCredito = [];
 
 function aplicarParchesClientesBase(clientesArr, baseArr) {
   const mapaBase = new Map(
@@ -45,6 +47,10 @@ const LS_KEYS = {
   productosNomad: "factu_productos_nomad",
   comprasSanare: "factu_compras_sanare",
   comprasNomad: "factu_compras_nomad",
+  pagosSanare: "factu_pagos_sanare",
+  pagosNomad: "factu_pagos_nomad",
+  notasSanare: "factu_notas_sanare",
+  notasNomad: "factu_notas_nomad",
   empresaActual: "factu_empresa_actual",
   folioSanare: "factu_folio_sanare",
   folioNomad: "factu_folio_nomad"
@@ -4300,6 +4306,309 @@ const PRODUCTOS_BASE_NOMAD = [
   }
 ];
 
+
+// ========================= PAGOS =========================
+
+function initPagos() {
+  const form = document.getElementById("form-pago");
+  if (!form) return;
+
+  renderClientesEnPagos();
+  renderTablaPagos();
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    guardarPagoDesdeForm();
+  });
+
+  const btnLimpiar = document.getElementById("btn-pago-limpiar");
+  if (btnLimpiar) {
+    btnLimpiar.addEventListener("click", () => {
+      form.reset();
+      const jsonArea = document.getElementById("pag-json");
+      if (jsonArea) jsonArea.value = "";
+      const serieInput = document.getElementById("pag-serie");
+      if (serieInput) serieInput.value = "CP";
+    });
+  }
+}
+
+function renderClientesEnPagos() {
+  const sel = document.getElementById("pag-cliente");
+  if (!sel) return;
+  sel.innerHTML = "";
+  if (!Array.isArray(clientes) || clientes.length === 0) {
+    const opt = document.createElement("option");
+    opt.textContent = "No hay clientes, crea uno primero";
+    opt.value = "";
+    sel.appendChild(opt);
+    return;
+  }
+  clientes.forEach((c) => {
+    const opt = document.createElement("option");
+    opt.value = c.id;
+    opt.textContent = `${c.nombre} (${c.rfc || "S/RFC"})`;
+    sel.appendChild(opt);
+  });
+}
+
+function guardarPagoDesdeForm() {
+  const form = document.getElementById("form-pago");
+  if (!form) return;
+
+  const clienteId = document.getElementById("pag-cliente").value;
+  const cliente = clientes.find((c) => c.id === clienteId);
+
+  if (!cliente) {
+    alert("Selecciona un cliente para el pago.");
+    return;
+  }
+
+  const fechaPago = document.getElementById("pag-fecha").value || hoyIso();
+  const serie = (document.getElementById("pag-serie").value || "CP").trim();
+  const folio = (document.getElementById("pag-folio").value || "").trim();
+  const formaPago = document.getElementById("pag-forma-pago").value;
+  const monto = parseFloat(document.getElementById("pag-monto").value || "0");
+  const facturasRel = (document.getElementById("pag-facturas").value || "").trim();
+  const notas = (document.getElementById("pag-notas").value || "").trim();
+
+  if (!monto || monto <= 0) {
+    alert("Captura un monto de pago válido.");
+    return;
+  }
+
+  const id = form.dataset.editId || uid();
+
+  const pago = {
+    id,
+    serie,
+    folio,
+    clienteId,
+    clienteNombre: cliente.nombre,
+    clienteRfc: cliente.rfc,
+    fechaPago,
+    formaPago,
+    monto,
+    facturasRel,
+    notas,
+    creadoEl: new Date().toISOString()
+  };
+
+  const idx = pagos.findIndex((p) => p.id === id);
+  if (idx >= 0) {
+    pagos[idx] = pago;
+  } else {
+    pagos.push(pago);
+  }
+
+  // JSON "maqueta" de complemento de pago
+  const json = {
+    tipoComprobante: "P", // pago
+    versionCfdi: "4.0",
+    emisor: {
+      nombre: EMISOR.nombre,
+      rfc: EMISOR.rfc
+    },
+    receptor: {
+      nombre: cliente.nombre,
+      rfc: cliente.rfc
+    },
+    pago: {
+      fechaPago,
+      formaPago,
+      moneda: "MXN",
+      monto,
+      facturasRelacionadas: facturasRel
+        ? facturasRel.split(",").map((x) => x.trim()).filter(Boolean)
+        : []
+    }
+  };
+
+  const jsonArea = document.getElementById("pag-json");
+  if (jsonArea) {
+    jsonArea.value = JSON.stringify(json, null, 2);
+  }
+
+  guardarEnLocalStorage();
+  renderTablaPagos();
+  form.dataset.editId = ""; // modo alta de nuevo
+}
+
+function renderTablaPagos() {
+  const tbody = document.querySelector("#tabla-pagos tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  if (!Array.isArray(pagos)) return;
+
+  pagos.forEach((p) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeXml(p.serie || "")} ${escapeXml(p.folio || "")}</td>
+      <td>${escapeXml(p.fechaPago || "")}</td>
+      <td>${escapeXml(p.clienteNombre || "")}</td>
+      <td>${formatoMoneda(p.monto || 0)}</td>
+      <td>${escapeXml(p.facturasRel || "")}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ========================= NOTAS DE CRÉDITO =========================
+
+function initNotasCredito() {
+  const form = document.getElementById("form-nota");
+  if (!form) return;
+
+  renderClientesEnNotas();
+  renderTablaNotas();
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    guardarNotaDesdeForm();
+  });
+
+  const btnLimpiar = document.getElementById("btn-nc-limpiar");
+  if (btnLimpiar) {
+    btnLimpiar.addEventListener("click", () => {
+      form.reset();
+      const jsonArea = document.getElementById("nc-json");
+      if (jsonArea) jsonArea.value = "";
+      const serieInput = document.getElementById("nc-serie");
+      if (serieInput) serieInput.value = "NC";
+    });
+  }
+}
+
+function renderClientesEnNotas() {
+  const sel = document.getElementById("nc-cliente");
+  if (!sel) return;
+  sel.innerHTML = "";
+  if (!Array.isArray(clientes) || clientes.length === 0) {
+    const opt = document.createElement("option");
+    opt.textContent = "No hay clientes, crea uno primero";
+    opt.value = "";
+    sel.appendChild(opt);
+    return;
+  }
+  clientes.forEach((c) => {
+    const opt = document.createElement("option");
+    opt.value = c.id;
+    opt.textContent = `${c.nombre} (${c.rfc || "S/RFC"})`;
+    sel.appendChild(opt);
+  });
+}
+
+function guardarNotaDesdeForm() {
+  const form = document.getElementById("form-nota");
+  if (!form) return;
+
+  const clienteId = document.getElementById("nc-cliente").value;
+  const cliente = clientes.find((c) => c.id === clienteId);
+
+  if (!cliente) {
+    alert("Selecciona un cliente para la nota de crédito.");
+    return;
+  }
+
+  const fecha = document.getElementById("nc-fecha").value || hoyIso();
+  const serie = (document.getElementById("nc-serie").value || "NC").trim();
+  const folio = (document.getElementById("nc-folio").value || "").trim();
+  const tipo = document.getElementById("nc-tipo").value;
+  const monto = parseFloat(document.getElementById("nc-monto").value || "0");
+  const facturaRel = (document.getElementById("nc-factura-rel").value || "").trim();
+  const tipoCancelacion = document.getElementById("nc-cancelacion").value;
+  const sustituye = (document.getElementById("nc-sustituye").value || "").trim();
+  const motivo = (document.getElementById("nc-motivo").value || "").trim();
+
+  if (!monto || monto <= 0) {
+    alert("Captura un monto de nota válido.");
+    return;
+  }
+
+  const id = form.dataset.editId || uid();
+
+  const nota = {
+    id,
+    serie,
+    folio,
+    clienteId,
+    clienteNombre: cliente.nombre,
+    clienteRfc: cliente.rfc,
+    fecha,
+    tipo,
+    monto,
+    facturaRel,
+    tipoCancelacion,
+    sustituye,
+    motivo,
+    creadoEl: new Date().toISOString()
+  };
+
+  const idx = notasCredito.findIndex((n) => n.id === id);
+  if (idx >= 0) {
+    notasCredito[idx] = nota;
+  } else {
+    notasCredito.push(nota);
+  }
+
+  // JSON "maqueta" de nota de crédito / cancelación
+  const json = {
+    tipoComprobante: "E", // E = Egreso
+    versionCfdi: "4.0",
+    emisor: {
+      nombre: EMISOR.nombre,
+      rfc: EMISOR.rfc
+    },
+    receptor: {
+      nombre: cliente.nombre,
+      rfc: cliente.rfc
+    },
+    nota: {
+      fecha,
+      tipo,
+      monto,
+      facturaRelacionada: facturaRel,
+      cancelacion: {
+        tipo: tipoCancelacion,
+        sustituye
+      },
+      motivo
+    }
+  };
+
+  const jsonArea = document.getElementById("nc-json");
+  if (jsonArea) {
+    jsonArea.value = JSON.stringify(json, null, 2);
+  }
+
+  guardarEnLocalStorage();
+  renderTablaNotas();
+  form.dataset.editId = "";
+}
+
+function renderTablaNotas() {
+  const tbody = document.querySelector("#tabla-notas tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  if (!Array.isArray(notasCredito)) return;
+
+  notasCredito.forEach((n) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeXml(n.serie || "")} ${escapeXml(n.folio || "")}</td>
+      <td>${escapeXml(n.fecha || "")}</td>
+      <td>${escapeXml(n.clienteNombre || "")}</td>
+      <td>${escapeXml(n.tipo || "")}</td>
+      <td>${formatoMoneda(n.monto || 0)}</td>
+      <td>${escapeXml(n.facturaRel || "")}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+
 // ========================= UTILIDADES =========================
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
@@ -4375,6 +4684,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initProductos();
   initCompras();
   initFacturacion();
+  initPagos();
+  initNotasCredito();
 });
 
 // ========================= NAVEGACIÓN =========================
@@ -4411,6 +4722,18 @@ function initNavegacion() {
       if (typeof renderHistorialCompras === "function") {
         renderHistorialCompras();
       }
+      if (typeof renderClientesEnPagos === "function") {
+        renderClientesEnPagos();
+      }
+      if (typeof renderClientesEnNotas === "function") {
+        renderClientesEnNotas();
+      }
+      if (typeof renderTablaPagos === "function") {
+        renderTablaPagos();
+      }
+      if (typeof renderTablaNotas === "function") {
+        renderTablaNotas();
+      }
       // reiniciar folio de factura para la empresa seleccionada
       inicializarFolioSegunEmpresa();
       // actualizar estilos activos
@@ -4422,6 +4745,7 @@ function initNavegacion() {
 
 
 // ========================= LOCAL STORAGE =========================
+
 
 function cargarDesdeLocalStorage() {
   try {
@@ -4436,6 +4760,10 @@ function cargarDesdeLocalStorage() {
     const prdNom = localStorage.getItem(LS_KEYS.productosNomad);
     const cmpSan = localStorage.getItem(LS_KEYS.comprasSanare);
     const cmpNom = localStorage.getItem(LS_KEYS.comprasNomad);
+    const pagSan = localStorage.getItem(LS_KEYS.pagosSanare);
+    const pagNom = localStorage.getItem(LS_KEYS.pagosNomad);
+    const ncSan  = localStorage.getItem(LS_KEYS.notasSanare);
+    const ncNom  = localStorage.getItem(LS_KEYS.notasNomad);
 
     let clientesSanare = cliSan ? JSON.parse(cliSan) : [];
     let clientesNomad = cliNom ? JSON.parse(cliNom) : [];
@@ -4443,13 +4771,16 @@ function cargarDesdeLocalStorage() {
     let productosNomad = prdNom ? JSON.parse(prdNom) : [];
     let comprasSanare = cmpSan ? JSON.parse(cmpSan) : [];
     let comprasNomad = cmpNom ? JSON.parse(cmpNom) : [];
+    let pagosSanare = pagSan ? JSON.parse(pagSan) : [];
+    let pagosNomad  = pagNom ? JSON.parse(pagNom) : [];
+    let notasSanare = ncSan ? JSON.parse(ncSan) : [];
+    let notasNomad  = ncNom ? JSON.parse(ncNom) : [];
 
-    
     // aplicamos parches de catálogo base (solo llena campos vacíos)
     clientesSanare = aplicarParchesClientesBase(clientesSanare, CLIENTES_BASE_SANARE);
     clientesNomad = aplicarParchesClientesBase(clientesNomad, CLIENTES_BASE_NOMAD);
 
-// si están vacíos, usamos catálogo base de Excel
+    // si están vacíos, usamos catálogo base de Excel
     if (clientesSanare.length === 0) clientesSanare = CLIENTES_BASE_SANARE.slice();
     if (clientesNomad.length === 0) clientesNomad = CLIENTES_BASE_NOMAD.slice();
     if (productosSanare.length === 0) productosSanare = PRODUCTOS_BASE_SANARE.slice();
@@ -4460,10 +4791,14 @@ function cargarDesdeLocalStorage() {
       clientes = clientesSanare;
       productos = productosSanare;
       compras = comprasSanare;
+      pagos = pagosSanare;
+      notasCredito = notasSanare;
     } else {
       clientes = clientesNomad;
       productos = productosNomad;
       compras = comprasNomad;
+      pagos = pagosNomad;
+      notasCredito = notasNomad;
     }
 
     // guardamos de nuevo por si se inicializaron con base Excel
@@ -4473,6 +4808,10 @@ function cargarDesdeLocalStorage() {
     localStorage.setItem(LS_KEYS.productosNomad, JSON.stringify(productosNomad));
     localStorage.setItem(LS_KEYS.comprasSanare, JSON.stringify(comprasSanare));
     localStorage.setItem(LS_KEYS.comprasNomad, JSON.stringify(comprasNomad));
+    localStorage.setItem(LS_KEYS.pagosSanare, JSON.stringify(pagosSanare));
+    localStorage.setItem(LS_KEYS.pagosNomad, JSON.stringify(pagosNomad));
+    localStorage.setItem(LS_KEYS.notasSanare, JSON.stringify(notasSanare));
+    localStorage.setItem(LS_KEYS.notasNomad, JSON.stringify(notasNomad));
     localStorage.setItem(LS_KEYS.empresaActual, empresaActual);
   } catch (e) {
     console.warn("Error leyendo localStorage", e);
@@ -4480,6 +4819,8 @@ function cargarDesdeLocalStorage() {
     clientes = empresaActual === "sanare" ? CLIENTES_BASE_SANARE.slice() : CLIENTES_BASE_NOMAD.slice();
     productos = empresaActual === "sanare" ? PRODUCTOS_BASE_SANARE.slice() : PRODUCTOS_BASE_NOMAD.slice();
     compras = [];
+    pagos = [];
+    notasCredito = [];
   }
 }
 
@@ -4491,6 +4832,10 @@ function guardarEnLocalStorage() {
   const prdNom = localStorage.getItem(LS_KEYS.productosNomad);
   const cmpSan = localStorage.getItem(LS_KEYS.comprasSanare);
   const cmpNom = localStorage.getItem(LS_KEYS.comprasNomad);
+  const pagSan = localStorage.getItem(LS_KEYS.pagosSanare);
+  const pagNom = localStorage.getItem(LS_KEYS.pagosNomad);
+  const ncSan  = localStorage.getItem(LS_KEYS.notasSanare);
+  const ncNom  = localStorage.getItem(LS_KEYS.notasNomad);
 
   let clientesSanare = cliSan ? JSON.parse(cliSan) : CLIENTES_BASE_SANARE.slice();
   let clientesNomad = cliNom ? JSON.parse(cliNom) : CLIENTES_BASE_NOMAD.slice();
@@ -4498,15 +4843,23 @@ function guardarEnLocalStorage() {
   let productosNomad = prdNom ? JSON.parse(prdNom) : PRODUCTOS_BASE_NOMAD.slice();
   let comprasSanare = cmpSan ? JSON.parse(cmpSan) : [];
   let comprasNomad = cmpNom ? JSON.parse(cmpNom) : [];
+  let pagosSanare = pagSan ? JSON.parse(pagSan) : [];
+  let pagosNomad  = pagNom ? JSON.parse(pagNom) : [];
+  let notasSanare = ncSan ? JSON.parse(ncSan) : [];
+  let notasNomad  = ncNom ? JSON.parse(ncNom) : [];
 
   if (empresaActual === "sanare") {
     clientesSanare = clientes.slice();
     productosSanare = productos.slice();
     comprasSanare = compras.slice();
+    pagosSanare = pagos.slice();
+    notasSanare = notasCredito.slice();
   } else {
     clientesNomad = clientes.slice();
     productosNomad = productos.slice();
     comprasNomad = compras.slice();
+    pagosNomad = pagos.slice();
+    notasNomad = notasCredito.slice();
   }
 
   localStorage.setItem(LS_KEYS.clientesSanare, JSON.stringify(clientesSanare));
@@ -4515,10 +4868,12 @@ function guardarEnLocalStorage() {
   localStorage.setItem(LS_KEYS.productosNomad, JSON.stringify(productosNomad));
   localStorage.setItem(LS_KEYS.comprasSanare, JSON.stringify(comprasSanare));
   localStorage.setItem(LS_KEYS.comprasNomad, JSON.stringify(comprasNomad));
+  localStorage.setItem(LS_KEYS.pagosSanare, JSON.stringify(pagosSanare));
+  localStorage.setItem(LS_KEYS.pagosNomad, JSON.stringify(pagosNomad));
+  localStorage.setItem(LS_KEYS.notasSanare, JSON.stringify(notasSanare));
+  localStorage.setItem(LS_KEYS.notasNomad, JSON.stringify(notasNomad));
   localStorage.setItem(LS_KEYS.empresaActual, empresaActual);
 }
-
-
 // ========================= SAT CATALOGS =========================
 async function cargarSatCatalogs() {
   try {
@@ -4592,7 +4947,20 @@ function poblarCombosSat() {
     selMetodo.appendChild(opt);
   });
 
-  // Producto: datalist de ClaveProdServ y ClaveUnidad (TODOS los valores del Excel)
+  
+  // Pagos: forma de pago (se reutiliza catálogo SAT)
+  const selFormaPagoPago = document.getElementById("pag-forma-pago");
+  if (selFormaPagoPago) {
+    selFormaPagoPago.innerHTML = "";
+    satCatalogs.formaPago.forEach((f) => {
+      const opt = document.createElement("option");
+      opt.value = f.clave;
+      opt.textContent = `${f.clave} - ${f.descripcion}`;
+      selFormaPagoPago.appendChild(opt);
+    });
+  }
+
+// Producto: datalist de ClaveProdServ y ClaveUnidad (TODOS los valores del Excel)
   const dlProdServ = document.getElementById("lista-clave-prodserv");
   const dlUnidad = document.getElementById("lista-clave-unidad");
   dlProdServ.innerHTML = "";
