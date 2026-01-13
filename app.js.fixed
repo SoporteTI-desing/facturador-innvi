@@ -6257,6 +6257,7 @@ function eliminarPago(pagoId) {
     sincronizarSaldoFacturaConPagos(fid);
   }
 }
+}
 
 function irASeccion(section) {
   const btn = document.querySelector(`.nav-btn[data-section="${section}"]`);

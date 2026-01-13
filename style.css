@@ -507,3 +507,165 @@ button#btn-agregar-concepto {
 .factura-pdf-header .emisor img {
   display: block;
 }
+
+
+/* ===== Helpers ===== */
+.hidden{display:none !important;}
+
+/* ===== Modal (cancelación SAT) ===== */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  z-index:9999;
+}
+.modal-content{
+  width:min(720px, 100%);
+  background:#fff;
+  border-radius:16px;
+  padding:18px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+}
+.modal-actions{
+  display:flex;
+  gap:10px;
+  justify-content:flex-end;
+  margin-top:12px;
+}
+.btn.danger{
+  background:#c62828;
+  color:#fff;
+}
+.table-wrap{
+  width:100%;
+  overflow-x:auto;
+  overflow-y:visible;
+}
+
+
+/* ========= Dropdown Acciones (Histórico) ========= */
+.actions { position: relative; }
+.dropdown { position: relative; display: inline-block; }
+.btn-actions-menu{
+  padding: 4px 10px;
+  line-height: 1.2;
+}
+.dropdown-menu{
+  position: fixed; /* flotante (tipo ventanita) */
+  left: 0;
+  top: 0;
+  min-width: 210px;
+  background: #3f444d;
+  color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.18);
+  padding: 6px 0;
+  z-index: 9999;
+}
+
+.dropdown-menu.hidden{ display:none; }
+.dropdown-item{
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  font-size: 13px;
+  color: #111;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dropdown-item:hover{ background: rgba(0,0,0,.05); }
+.dropdown-item .icon{
+  width: 18px; height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: .75;
+}
+.dropdown-item.disabled{
+  opacity: .45;
+  cursor: not-allowed;
+}
+.dropdown-divider{
+  height: 1px;
+  background: rgba(0,0,0,.08);
+  margin: 6px 0;
+}
+
+
+/* ========================= Drawer Admin Pagos ========================= */
+.drawer-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  z-index: 9999;
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
+}
+.drawer-overlay.hidden{ display:none; }
+
+.drawer-panel{
+  width: min(620px, 92vw);
+  background: #fff;
+  height: 100%;
+  box-shadow: -10px 0 28px rgba(0,0,0,.25);
+  display: flex;
+  flex-direction: column;
+}
+.drawer-header{
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.drawer-title{
+  font-weight: 700;
+  font-size: 16px;
+}
+.drawer-subtitle{
+  font-size: 12px;
+  opacity: .75;
+}
+.drawer-close{
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.12);
+  background: #fff;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+}
+.drawer-body{
+  padding: 14px 16px 18px;
+  overflow: auto;
+}
+.grid-3.small{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.muted{ opacity:.7; font-size:12px; }
+.btn.btn-light{
+  background:#f3f4f6;
+  border:1px solid rgba(0,0,0,.12);
+  color:#111;
+}
+.btn.btn-danger{
+  background:#dc2626;
+  border:1px solid rgba(0,0,0,.12);
+  color:#fff;
+}
+@media (max-width: 720px){
+  .grid-3.small{ grid-template-columns: 1fr; }
+}

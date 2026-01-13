@@ -23,9 +23,8 @@
     <button data-section="productos" class="nav-btn">Productos</button>
     <button data-section="compras" class="nav-btn">Compras</button>
     <button data-section="facturacion" class="nav-btn">Facturación</button>
-    <button data-section="pagos" class="nav-btn">Pagos</button>
-    <button data-section="notas" class="nav-btn">Notas de crédito</button>
-  </nav>
+    <button data-section="pagos" class="nav-btn">Histórico de facturación</button>
+</nav>
 
   <main>
     <!-- =================== CLIENTES =================== -->
@@ -385,7 +384,7 @@
 
           <label>
             Tipo de comprobante
-            <input type="text" id="fac-tipo-comp" value="I" readonly />
+            <select id="fac-tipo-comp"></select>
           </label>
 
           <label>
@@ -464,6 +463,7 @@
         <div class="totales-actions">
           <button type="button" id="btn-generar-xml">Generar XML CFDI</button>
           <button type="button" id="btn-ver-impresion">Vista impresión / PDF</button>
+          <button type="button" id="btn-cancelar-ultima-factura" class="danger">Cancelar última factura</button>
         </div>
       </div>
 
@@ -487,14 +487,35 @@
     </section>
     <!-- =================== PAGOS =================== -->
     <section id="sec-pagos" class="section">
-      <h2>Pagos / Complemento de pagos</h2>
+      <h2>Histórico de facturación</h2>
       <p class="help">
         Usa este módulo cuando la factura se emitió con método de pago <strong>PPD</strong>.
         Para facturas <strong>PUE</strong> el comprobante de pago no es obligatorio.
       </p>
+      <div class="card" id="card-historico-facturas">
+        <h3>Histórico de facturación</h3>
+        <p class="help">Aquí verás todas las facturas generadas. En facturas con <strong>PPD</strong> podrás habilitar el complemento de pago.</p>
+        <div class="table-wrap">
+          <table class="tbl" id="tbl-historico-facturas">
+            <thead>
+              <tr>
+                <th>Serie/Folio</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Total</th>
+                <th>Método</th>
+                <th>Estatus</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
 
       <div class="grid-2">
-        <form id="form-pago" class="card">
+        <form id="form-pago" class="card hidden">
           <h3>Nuevo comprobante de pago</h3>
 
           <div class="grid-2">
@@ -568,112 +589,7 @@
       </div>
     </section>
 
-    <!-- =================== NOTAS DE CRÉDITO =================== -->
-    <section id="sec-notas" class="section">
-      <h2>Notas de crédito y cancelaciones</h2>
-      <p class="help">
-        Usa una nota de crédito para descuentos, devoluciones o cancelaciones.
-        Para cancelación de facturas de meses anteriores, marca como
-        <strong>Con relación</strong> y captura el folio/UUID que sustituye.
-      </p>
-
-      <div class="grid-2">
-        <form id="form-nota" class="card">
-          <h3>Nueva nota de crédito</h3>
-
-          <div class="grid-2">
-            <label>
-              Cliente
-              <select id="nc-cliente"></select>
-            </label>
-
-            <label>
-              Fecha
-              <input type="date" id="nc-fecha" />
-            </label>
-
-            <label>
-              Serie
-              <input type="text" id="nc-serie" value="NC" />
-            </label>
-
-            <label>
-              Folio
-              <input type="number" id="nc-folio" min="1" />
-            </label>
-
-            <label>
-              Tipo de nota
-              <select id="nc-tipo">
-                <option value="DESCUENTO">Descuento</option>
-                <option value="DEVOLUCION">Devolución</option>
-                <option value="CANCELACION">Cancelación</option>
-              </select>
-            </label>
-
-            <label>
-              Importe de la nota
-              <input type="number" step="0.01" id="nc-monto" />
-            </label>
-          </div>
-
-          <label>
-            Factura relacionada (folio/UUID)
-            <input type="text" id="nc-factura-rel" />
-          </label>
-
-          <div class="grid-2">
-            <label>
-              Tipo de cancelación
-              <select id="nc-cancelacion">
-                <option value="">N/A</option>
-                <option value="SIN_RELACION">Sin relación (mismo mes)</option>
-                <option value="CON_RELACION">Con relación (mes anterior, sustituida)</option>
-              </select>
-            </label>
-
-            <label>
-              Folio/UUID que sustituye (solo si es con relación)
-              <input type="text" id="nc-sustituye" />
-            </label>
-          </div>
-
-          <label>
-            Motivo / notas
-            <textarea id="nc-motivo" rows="3"></textarea>
-          </label>
-
-          <div class="totales-actions">
-            <button type="submit" id="btn-nc-guardar">Guardar nota / generar JSON</button>
-            <button type="button" id="btn-nc-limpiar">Limpiar</button>
-          </div>
-
-          <label>
-            JSON de la nota (maqueta)
-            <textarea id="nc-json" rows="8" readonly></textarea>
-          </label>
-        </form>
-
-        <div class="card">
-          <h3>Historial de notas de crédito</h3>
-          <table class="table" id="tabla-notas">
-            <thead>
-              <tr>
-                <th>Folio</th>
-                <th>Fecha</th>
-                <th>Cliente</th>
-                <th>Tipo</th>
-                <th>Monto</th>
-                <th>Factura</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-  </main>
+    </main>
 
   <!-- Área exclusiva para impresión -->
   <div id="print-area" class="print-area"></div>
@@ -695,5 +611,41 @@
 </datalist>
 
   <script src="app.js"></script>
+
+  <!-- =================== MODAL CANCELACIÓN SAT =================== -->
+  <div class="modal hidden" id="modal-cancelar">
+    <div class="modal-content">
+      <h3>Cancelar factura (SAT)</h3>
+      <p class="help">Selecciona el motivo de cancelación. Si eliges <strong>01</strong>, se solicita el UUID que sustituye.</p>
+
+      <div class="grid-2">
+        <label>
+          Motivo de cancelación
+          <select id="cancel-motivo">
+            <option value="02">02 - Comprobantes emitidos con errores sin relación</option>
+            <option value="01">01 - Comprobantes emitidos con errores con relación</option>
+            <option value="03">03 - No se llevó a cabo la operación</option>
+            <option value="04">04 - Operación nominativa relacionada en una factura global</option>
+          </select>
+        </label>
+
+        <label id="cancel-uuid-wrap" class="hidden">
+          UUID que sustituye (solo motivo 01)
+          <input type="text" id="cancel-uuid" placeholder="UUID de sustitución" />
+        </label>
+      </div>
+
+      <label>
+        Observaciones (opcional)
+        <textarea id="cancel-obs" rows="2"></textarea>
+      </label>
+
+      <div class="modal-actions">
+        <button type="button" class="btn danger" id="btn-confirmar-cancelacion">Cancelar factura</button>
+        <button type="button" class="btn" id="btn-cerrar-cancelacion">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

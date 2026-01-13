@@ -211359,31 +211359,35 @@
   ],
   "formaPago": [
     {
-      "clave": "1",
+      "clave": "01",
       "descripcion": "Efectivo"
     },
     {
-      "clave": "2",
+      "clave": "02",
       "descripcion": "Cheque nominativo"
     },
     {
-      "clave": "3",
+      "clave": "03",
       "descripcion": "Transferencia electrónica de fondos"
     },
     {
-      "clave": "4",
+      "clave": "04",
       "descripcion": "Tarjeta de crédito"
     },
     {
-      "clave": "5",
+      "clave": "05",
       "descripcion": "Monedero electrónico"
     },
     {
-      "clave": "6",
+      "clave": "06",
       "descripcion": "Dinero electrónico"
     },
     {
-      "clave": "8",
+      "clave": "07",
+      "descripcion": "Tarjeta de débito"
+    },
+    {
+      "clave": "08",
       "descripcion": "Vales de despensa"
     },
     {
